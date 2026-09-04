@@ -1,23 +1,34 @@
 package main
 
 import (
-  "net/http"
+	"fmt"
+	"net/http"
+	"os"
 
-  "github.com/labstack/echo/v5"
-  "github.com/labstack/echo/v5/middleware"
+	"github.com/joho/godotenv"
+	"github.com/labstack/echo/v5"
+	"github.com/labstack/echo/v5/middleware"
 )
 
 func main() {
-  e := echo.New()
+	err := godotenv.Load()
+	if err != nil {
+		panic("failed to load .env file")
+	}
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "1323"
+	}
 
-  e.Use(middleware.RequestLogger())
-  e.Use(middleware.Recover())
+	e := echo.New()
 
-  e.GET("/", func(c *echo.Context) error {
-    return c.JSON(http.StatusOK, map[string]string{"message": "Hello, World!"})
-  })
+	e.Use(middleware.RequestLogger())
+	e.Use(middleware.Recover())
 
-  if err := e.Start(":1323"); err != nil {
-    e.Logger.Error("failed to start server", "error", err)
-  }
+	e.GET("/", func(c *echo.Context) error {
+		return c.JSON(http.StatusOK, map[string]string{"message": "Hello, World!"})
+	})
+	if err := e.Start(fmt.Sprintf(":%s", port)); err != nil {
+		e.Logger.Error("failed to start server", "error", err)
+	}
 }
